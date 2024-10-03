@@ -1,0 +1,522 @@
+---
+title: "Coral top down bottom up exp"
+author: "Noam Altman-Kurosaki"
+date: "2024-10-03"
+output: html_document
+---
+```{r setup, include=FALSE}
+
+rm(list=ls()) # clean up
+library(knitr)
+library(car)
+library(reshape2)
+library(plyr)
+library(tidyr)
+library(lme4)
+library(MuMIn)
+library(effects)
+library(ggplot2)
+library(ggrepel)
+library(ggpubr)
+library(emmeans)
+library(glmmTMB)
+library(DHARMa)
+library(here)
+
+opts_chunk$set(comment="  ",
+               collapse=TRUE, 
+               echo=FALSE,
+               #fig.asp=1/gr,
+               fig.height=8,
+               fig.width = 10,
+               dev="png",
+               warning=TRUE
+               )
+opts_knit$set(eval.after = "fig.cap") 
+```  
+
+```{r functions}
+# create function for standard error
+se = function(x){
+  sd(x, na.rm = TRUE)/sqrt(length(x))
+}
+
+# Smithson verkuilen transformation for beta-regression
+# https://stats.stackexchange.com/questions/31300/dealing-with-0-1-values-in-a-beta-regression
+sv_trans = function(prop, N, s = 0.000005){
+  (prop*(nrow(N) - 1) + s)/nrow(N)
+  # where prop is the proportional value you're transforming, 
+  # N is the sample size, which is specified by taking the number of rows/observations from a given dataframe,
+  # and s is a small offset (0.5 suggested)
+}
+
+
+
+```
+
+# Figure 1 - coral growth
+## Model
+```{r percent change, fig.height = 10, fig.width=10}
+change <- read.csv(here::here("data", "coral_growth.csv"), stringsAsFactors = T)
+
+hist(change$Percent.change) # continuous -Inf - Inf, mostly normal
+
+
+
+# lmer
+
+growth_mod <- lmer(Percent.change ~ Caging*Fertilizer*Coral + (1 | Parent.colony) + (1 + Comb | Block), data = change)
+summary(growth_mod)
+anova(growth_mod) # REALLY ONLY A CORAL*CAGING EFFECT
+plot(simulateResiduals(growth_mod)) # all good
+r.squaredGLMM(growth_mod) # 0.53, 0.60
+
+#  Type III Analysis of Variance Table with Satterthwaite's method
+#                           Sum Sq Mean Sq NumDF  DenDF F value    Pr(>F)    
+#  Caging                   535.15  535.15     1 12.694 35.5861 5.193e-05 ***
+#  Fertilizer                 2.28    2.28     1 49.964  0.1514    0.6988    
+#  Coral                     32.90   32.90     1 66.000  2.1877    0.1439    
+#  Caging:Fertilizer          2.72    2.72     1 14.180  0.1810    0.6769    
+#  Caging:Coral            1245.76 1245.76     1 66.000 82.8391 2.871e-13 ***
+#  Fertilizer:Coral           4.92    4.92     1 66.000  0.3270    0.5694    
+#  Caging:Fertilizer:Coral    0.02    0.02     1 66.000  0.0015    0.9694    
+   
+results <-  "Caging - P = 5.2e-05\nFertilizer - P = 0.69\nCoral - P = 0.14\nCaging X Fertilizer - P = 0.67\nCaging X Coral - P = 2.9e-13\nFertilizerXCoral - P = 0.56\nCaging X Fertilizer X Coral - P = 0.96"
+
+
+growth_emm <- emmeans(growth_mod, ~ Coral*Caging*Fertilizer) # create emmeans object
+emmeans::contrast(growth_emm, "consec", simple = "each", combine = TRUE, adjust = "bonferroni") 
+# Porites grows more than Acropora when uncaged, but Acropora grows more when caged (no real fertilizer effect)
+# Acropora grows more when caged regardless of fertilizer. Caging doesn't affect porites growth regardless of fertilizer
+
+change_means <- plyr::ddply(change, c("Coral", "Caging", "Fertilizer"), numcolwise(mean))
+
+```
+
+## Plot
+```{r coral growth plot, fig.height = 10, fig.width=19}
+
+ggplot(data = change) +
+  geom_boxplot(aes(x = Caging, y = Percent.change, colour = Coral),
+               position = position_dodge(0.9), outlier.shape = NA, size = 1.2) +
+ geom_point(aes(x = Caging, y = Percent.change, colour = Coral),
+              size = 3, position = position_jitterdodge(dodge.width = 0.9, jitter.width = 0.3)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(~ Fertilizer) + 
+  scale_colour_manual(values=c("AP" = "dodgerblue",
+                               "PR" = "firebrick2"),
+                      labels = c(expression(italic("A. pulchra")), expression(italic("P. rus")) )
+                      ) +
+  scale_y_continuous(limits = c(-30,30)) +
+  labs(x = "", y = "Mass Change (%)\n") +
+  
+  theme_classic() + 
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        legend.position = "bottom",
+        legend.key.size = unit(2, 'cm'),
+        legend.text = element_text(size=30),
+        legend.title = element_text(size=35),
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", size = 30, hjust = .5, vjust = .5, face = "plain"),
+        axis.title.x = element_text(color = "grey20", size = 35, hjust = .5, vjust = 0, face = "plain"),
+        axis.text.y = element_text(color = "grey20", size = 30, hjust = .5, vjust = .5, face = "plain"),
+        axis.title.y = element_text(color = "grey20", size = 35, hjust = .5, vjust = 0, face = "plain"),
+        strip.text.x = element_text(color = "grey20", size = 35, hjust = .5, vjust = 0, face = "plain")
+  )
+
+# Stats and pairwise comparison stars added in photoshop 
+```
+
+# Figure 2 - corallivory
+## Model
+```{r corallivory data}
+corallivory_wide <- read.csv(here::here("data", "corallivory_data.csv"), stringsAsFactors = T)
+# coerce week and block into factors
+corallivory_wide$Week = as.factor(corallivory_wide$Week)
+corallivory_wide$Block = as.factor(corallivory_wide$Block)
+
+# focus on total corallivory for model
+total_corallivory_wide <- subset(corallivory_wide, Fish.code == "TOTAL")
+sum(total_corallivory_wide$Acropora.bites == 0) # 60/72 0s
+sum(total_corallivory_wide$Porites.Bites == 0) # 61/72 0s
+
+# melt to long dataset
+total_corallivory_long <- melt(total_corallivory_wide, id.vars=c("Order", "Date", "Week", "Start.time", "Runtime", "Runtime.min", "Plot.ID", "Fertilized", "Block", "Fish.code", "Fish.spp"), variable.name = "Grazing.target", value.name = "Bites")
+total_corallivory_long$Bite.rate = total_corallivory_long$Bites/(total_corallivory_long$Runtime.min/60)
+
+
+# Model with no week 0 - treatments couldn't have taken effect yet
+
+corallivory_mod_nz <- glmmTMB(Bites ~ Grazing.target*Fertilized + offset(log(Runtime.min)) + (1+Week|Plot.ID) + (1|Block),
+          data = subset(total_corallivory_long, Week != 0), family =  nbinom2, 
+          ziformula = ~  1)
+summary(corallivory_mod_nz)
+Anova(corallivory_mod_nz)
+plot(simulateResiduals(corallivory_mod_nz)) # confirmed week 0 is the issue
+corallivory_emm_nz = emmeans(corallivory_mod_nz, ~ Grazing.target*Fertilized) # create emmeans object
+emmeans::contrast(corallivory_emm_nz, "consec", simple = "each", combine = TRUE, mode = "zero")
+```
+
+## plot figure 3
+```{r plot corallivory figure, fig.height = 10, fig.width = 20}
+ggplot() +
+  geom_violin(data = subset(total_corallivory_long, Week != 0), aes(x = Fertilized, y = Bite.rate),
+               lwd = 1.2, trim = T, scale = "width", draw_quantiles = c(0.25, 0.5, 0.75), fill = "grey", alpha = 0.5) +
+
+    geom_jitter(data = subset(total_corallivory_long, Week != 0), 
+              aes(x = Fertilized, y = Bite.rate), width = 0.1, size = 5) +
+  
+  facet_wrap(~Grazing.target, labeller = as_labeller(c("Acropora.bites" = "A. pulchra", "Porites.Bites" = "P. rus")) )+
+  stat_summary(data = subset(total_corallivory_long, Week != 0), aes(x = Fertilized, y = Bite.rate), 
+               fun ='mean', geom='point', shape = 18, size=8, colour = "red") +
+
+  labs(y = bquote("Bite rate (Bites hr"^ -1*")"~"\n"), x = "") +
+  scale_y_continuous(limits = c(-0.1,18)) +
+  scale_x_discrete(limits = c("Y", "N"), labels = c("Fertilized", "Unfertilized") ) +
+  theme_classic() + 
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        legend.position = "bottom",
+        legend.key.size = unit(2, 'cm'),
+        legend.text = element_text(size=20),
+        legend.title = element_text(size=20),
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", size = 25, hjust = .5, vjust = .5, face = "plain"),
+        axis.title.x = element_text(color = "grey20", size = 25, hjust = .5, vjust = 0, face = "plain"),
+        axis.text.y = element_text(color = "grey20", size = 25, hjust = .5, vjust = .5, face = "plain"),
+        axis.title.y = element_text(color = "grey20", size = 28, hjust = .5, vjust = 0, face = "plain"),
+        strip.text.x = element_text(color = "grey20", size = 25, hjust = .5, vjust = 0, face = "italic")
+  )
+
+
+```
+
+## R1 - remove outlier
+```{r redone predation data}
+total_corallivory_long_v2 <-  subset(total_corallivory_long, Week != 0)
+
+total_corallivory_long_v3 <- 
+  dplyr::filter(total_corallivory_long_v2,
+                       total_corallivory_long_v2$Plot.ID != "2C" |
+                       total_corallivory_long_v2$Grazing.target != "Acropora.bites" |
+                       total_corallivory_long_v2$Week != 2)
+
+corallivory_mod_nz_2 <- glmmTMB(Bites ~ Grazing.target*Fertilized + offset(log(Runtime.min)) + (1+Week|Plot.ID) + (1|Block),
+          data = total_corallivory_long_v3, family =  compois, 
+          ziformula = ~  1)
+summary(corallivory_mod_nz_2)
+Anova(corallivory_mod_nz_2)
+plot(simulateResiduals(corallivory_mod_nz_2))
+corallivory_emm_nz_2 <- emmeans(corallivory_mod_nz_2, ~ Grazing.target*Fertilized) # create emmeans object
+emmeans::contrast(corallivory_emm_nz_2, "consec", simple = "each", combine = TRUE, mode = "zero")
+```
+
+## Plot
+```{r redone predation graph, fig.height = 10, fig.width = 15}
+outlier <-
+  dplyr::filter(total_corallivory_long_v2,
+                       total_corallivory_long_v2$Plot.ID == "2C" &
+                       total_corallivory_long_v2$Grazing.target == "Acropora.bites" &
+                       total_corallivory_long_v2$Week == 2)
+
+ggplot() +
+  geom_violin(data = total_corallivory_long_v3, aes(x = Fertilized, y = Bite.rate),
+               lwd = 1.2, trim = T, scale = "width", draw_quantiles = c(0.25, 0.5, 0.75), fill = "grey", alpha = 0.5) +
+  geom_point(data = outlier, aes(x = Fertilized, y = Bite.rate),  shape = 17, size = 8) +
+    geom_jitter(data = total_corallivory_long_v3, 
+              aes(x = Fertilized, y = Bite.rate), width = 0.1, size = 5) +
+  
+  facet_wrap(~Grazing.target, labeller = as_labeller(c("Acropora.bites" = "A. pulchra", "Porites.Bites" = "P. rus")) )+
+  stat_summary(data = total_corallivory_long_v3, aes(x = Fertilized, y = Bite.rate), 
+               fun ='mean', geom='point', shape = 18, size=8, colour = "red") +
+
+  labs(y = bquote("Bite rate (Bites hr"^ -1*")"~"\n"), x = "") +
+  scale_y_continuous(limits = c(-0.1,18)) +
+  scale_x_discrete(limits = c("Y", "N"), labels = c("Fertilized", "Unfertilized") ) +
+  theme_classic() + 
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        legend.position = "bottom",
+        legend.key.size = unit(2, 'cm'),
+        legend.text = element_text(size=20),
+        legend.title = element_text(size=20),
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", size = 25, hjust = .5, vjust = .5, face = "plain"),
+        axis.title.x = element_text(color = "grey20", size = 25, hjust = .5, vjust = 0, face = "plain"),
+        axis.text.y = element_text(color = "grey20", size = 25, hjust = .5, vjust = .5, face = "plain"),
+        axis.title.y = element_text(color = "grey20", size = 28, hjust = .5, vjust = 0, face = "plain"),
+        strip.text.x = element_text(color = "grey20", size = 25, hjust = .5, vjust = 0, face = "italic")
+  )
+
+```
+
+# Figure 3 - algal overgrowth
+## model
+```{r algal overgrowth}
+overgrowth <- read.csv(here::here("data", "algal_overgrowth.csv"))
+
+# take the mean of the front and back of each coral to get average overgrowth for each nubbin
+overgrowth <- ddply(overgrowth,  c("Plot.ID", "Block", "Caging", "Fertilized", "Comb.treatment", "Coral.species", "Coral.ID",
+                                  "Parent.colony"),numcolwise(mean)) 
+
+hist(overgrowth$Prop.overgrowth) # lots of 0s and at least one 1
+sum(overgrowth$Prop.mortality > 0) # only 11/96 fragments had additional mortality beyond the borders of overgrowth
+
+# sv-transformation for beta regression
+overgrowth$Overgrowth_transformed <- sv_trans(overgrowth$Prop.turf.overgrowth, overgrowth)
+overgrowth$Overgrowth.or.mortality_transformed <- sv_trans(overgrowth$Prop.overgrowth.or.mortality, overgrowth)
+
+# just overgrowth model
+overgrowth_mod <- glmmTMB(Overgrowth_transformed ~ Coral.species*Caging*Fertilized + (1|Parent.colony) + (1|Block), data = overgrowth, beta_family(link = "logit"))
+summary(overgrowth_mod)
+plot(simulateResiduals(overgrowth_mod)) # looks good
+Anova(overgrowth_mod)
+##                                   Chisq Df Pr(>Chisq)    
+## Coral.species                   43.9711  1  3.333e-11 ***
+## Caging                           3.1181  1  0.0774270 .  
+## Fertilized                       1.3208  1  0.2504441    
+## Coral.species:Caging             0.1887  1  0.6640105    
+## Coral.species:Fertilized         0.7901  1  0.3740559    
+## Caging:Fertilized               19.3053  1  1.114e-05 ***
+## Coral.species:Caging:Fertilized 11.6960  1  0.0006263 ***
+
+
+total_mortality_mod <- glmmTMB(Overgrowth.or.mortality_transformed ~ Coral.species*Caging*Fertilized + (1|Parent.colony) + (1|Block), data = overgrowth, beta_family(link = "logit"))
+plot(simulateResiduals(total_mortality_mod)) # looks good
+summary(total_mortality_mod)
+Anova(total_mortality_mod) 
+##                                   Chisq Df Pr(>Chisq)    
+## Coral.species                   45.6114  1  1.442e-11 ***
+## Caging                           3.4513  1   0.063201 .  
+## Fertilized                       1.5365  1   0.215140    
+## Coral.species:Caging             0.1179  1   0.731377    
+## Coral.species:Fertilized         0.9824  1   0.321606    
+## Caging:Fertilized               20.0551  1  7.524e-06 ***
+## Coral.species:Caging:Fertilized 12.5891  1   0.000388 ***
+
+# Trends basically identical between just overgrowth vs. overgrowth and additional mortality
+
+# FOR GRAPH
+## Caging - P = 0.06
+## Fertilizer - P = 0.2
+## Coral - P < 0.001  
+## Caging X Fertilizer - P < 0.001
+## Caging X Coral - P = 0.7    
+## Fertilizer X Coral - P = 0.3  
+## Caging X Fertilizer X Coral - P < 0.001
+
+# for both species, there seems to be a caging x fertilized interaction, where caged x unfertilized corals have more overgrowth than caged x fertilized corals, but uncaged x fertilized corals have more overgrowth than uncaged x unfertilized corals
+
+# examining three way interactions
+mortality_emm <- emmeans(total_mortality_mod, ~ Coral.species*Caging*Fertilized) # create emmeans object
+emmeans::contrast(mortality_emm, "consec", simple = "each", combine = TRUE, adjust = "bonferroni") # examine pairwise comparisons/interactions
+# overgrowth for porites is greater than acropora when: 1) uncaged x fertilized, 2) Caged x unfertilized (P < 0.0001)
+# overgrowth is greater in caged treatments for porites regardless of if fertilized (P = 0.01) or unfertilized (P < 0.0001)
+# overgrowth is greater for porites in the caged x unfertilized treatment vs. unfertilized treatment (P < 0.001), but is greater in the fertilized treatment when uncaged (P = 0.03)
+# overgrowth is similar for acropora regardless of caging or fertilizer treatment
+
+
+overgrowth_means <- ddply(overgrowth, c("Coral.species", "Fertilized", "Caging"), numcolwise(mean))
+```
+## R1 - model with outliers removed
+```{r overgrowth revision}
+overgrowth_sub <- overgrowth[overgrowth$Overgrowth.or.mortality_transformed != max(overgrowth$Overgrowth.or.mortality_transformed),]
+
+total_mortality_mod_v2 <- glmmTMB(Overgrowth.or.mortality_transformed ~ Coral.species*Caging*Fertilized + (1|Parent.colony) + (1|Block), data = overgrowth_sub, beta_family(link = "logit"))
+plot(simulateResiduals(total_mortality_mod_v2)) # looks good
+summary(total_mortality_mod_v2)
+Anova(total_mortality_mod_v2)
+
+# NEW RESULTS
+# Response: Overgrowth.or.mortality_transformed
+#                                   Chisq Df Pr(>Chisq)    
+# Coral.species                   46.1547  1  1.093e-11 ***
+# Caging                           6.4773  1  0.0109259 *  
+# Fertilized                       0.4928  1  0.4826678    
+# Coral.species:Caging             0.7213  1  0.3957027    
+# Coral.species:Fertilized         0.4099  1  0.5220397    
+# Caging:Fertilized               18.7357  1  1.501e-05 ***
+# Coral.species:Caging:Fertilized 11.0196  1  0.0009015 ***
+
+# OLD RESULTS
+#                                   Chisq Df Pr(>Chisq)    
+# Coral.species                   45.6114  1  1.442e-11 ***
+# Caging                           3.4513  1   0.063201 .  
+# Fertilized                       1.5365  1   0.215140    
+# Coral.species:Caging             0.1179  1   0.731377    
+# Coral.species:Fertilized         0.9824  1   0.321606    
+# Caging:Fertilized               20.0551  1  7.524e-06 ***
+# Coral.species:Caging:Fertilized 12.5891  1   0.000388 ***
+
+# Caging now sig
+# otherwise results are near identical
+
+mortality_emm_v2 <- emmeans(total_mortality_mod_v2, ~ Coral.species*Caging*Fertilized) # create emmeans object
+emmeans::contrast(mortality_emm_v2, "consec", simple = "each", combine = TRUE, adjust = "bonferroni") # examine pairwise
+
+```
+
+## plot
+```{r overgrowth plot, fig.height = 10, fig.width=19}
+
+
+
+(cagingXfertilized <- 
+  ggplot(data = overgrowth) +
+  geom_boxplot(aes(x = Fertilized, y = I(Overgrowth.or.mortality_transformed*100), colour = Caging),
+               position = position_dodge(0.9), outlier.shape = NA, size = 1.2) +
+ geom_point(aes(x = Fertilized, y = I(Overgrowth.or.mortality_transformed*100), colour = Caging),
+              size = 3, position = position_jitterdodge(dodge.width = 0.9, jitter.width = 0.3)) +
+  scale_colour_manual(values=c("Caged" = "#00BFC4",
+                               "Uncaged" = "coral"),
+                      name = "Treatment"
+                      ) +
+  facet_wrap(~Coral.species, labeller = as_labeller(c("Acropora" = "A. pulchra", "Porites" = "P. rus")) ) + 
+   labs(y = "Overgrowth (%)\n", x = "", title = "") +
+  scale_y_continuous(limits = c(0, 114)) +
+  
+  theme_classic() + 
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        legend.position = "bottom",
+        legend.key.size = unit(2, 'cm'),
+        legend.text = element_text(size=20),
+        legend.title = element_text(size=20),
+        plot.title = element_text(size=25),
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", size = 20, hjust = .5, vjust = .5, face = "plain"),
+        axis.title.x = element_text(color = "grey20", size = 25, hjust = .5, vjust = 0, face = "plain"),
+        axis.text.y = element_text(color = "grey20", size = 20, hjust = .5, vjust = .5, face = "plain"),
+        axis.title.y = element_text(color = "grey20", size = 25, hjust = .5, vjust = 0, face = "plain"),
+        strip.text.x = element_text(color = "grey20", size = 25, hjust = .5, vjust = 0, face = "italic")
+  ))
+# stats and stars added in photoshop
+```
+
+## Plot R1 - outlier removed
+```{r overgrowth redone figure, fig.height = 10, fig.width = 20}
+overgrowth_sub <- overgrowth[overgrowth$Overgrowth.or.mortality_transformed != max(overgrowth$Overgrowth.or.mortality_transformed),]
+overgrowth_outlier <- overgrowth[overgrowth$Overgrowth.or.mortality_transformed == max(overgrowth$Overgrowth.or.mortality_transformed),]
+
+ggplot() +
+  geom_boxplot(data = overgrowth_sub, aes(x = Fertilized, y = I(Overgrowth.or.mortality_transformed*100), colour = Caging),
+               position = position_dodge(0.9), outlier.shape = NA, size = 1.2) +
+  geom_point(data = overgrowth_sub, aes(x = Fertilized, y = I(Overgrowth.or.mortality_transformed*100), colour = Caging),
+              size = 5, position = position_jitterdodge(dodge.width = 0.9, jitter.width = 0.3)) +
+  geom_point(data = overgrowth_outlier, aes(x = Fertilized, y = I(Overgrowth.or.mortality_transformed*100), colour = Caging),
+              size = 5, position = position_jitterdodge(dodge.width = 0.9, jitter.width = 0.3), shape = 17, show.legend = FALSE) +
+  scale_colour_manual(values=c("Caged" = "#00BFC4",
+                               "Uncaged" = "coral"),
+                      name = "Treatment"
+                      ) +
+
+  facet_wrap(~Coral.species, labeller = as_labeller(c("Acropora" = "A. pulchra", "Porites" = "P. rus")) ) +
+   labs(y = "Overgrowth (%)\n", x = "", title = "") +
+  scale_y_continuous(limits = c(0, 114)) +
+#  scale_shape_manual(guide = "none") +
+  
+  theme_classic() + 
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        legend.position = "bottom",
+        legend.key.size = unit(2, 'cm'),
+        legend.text = element_text(size=20),
+        legend.title = element_text(size=20),
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", size = 25, hjust = .5, vjust = .5, face = "plain"),
+        axis.title.x = element_text(color = "grey20", size = 25, hjust = .5, vjust = 0, face = "plain"),
+        axis.text.y = element_text(color = "grey20", size = 25, hjust = .5, vjust = .5, face = "plain"),
+        axis.title.y = element_text(color = "grey20", size = 28, hjust = .5, vjust = 0, face = "plain"),
+        strip.text.x = element_text(color = "grey20", size = 25, hjust = .5, vjust = 0, face = "italic")
+  ) 
+# stats and stars added in photoshop
+```
+
+# Figure 4 - Herbivory
+## Model
+```{r total grazing}
+grazing_wide <- read.csv(here::here("data", "herbivory_data.csv"), stringsAsFactors = T)
+
+# overall grazing
+grazing_wide$Bites <- grazing_wide$Acropora.base.grazing + grazing_wide$Porites.base.grazing + grazing_wide$Cinderblock.grazing
+grazing_wide$Bite.rate <- grazing_wide$Bites/(grazing_wide$Runtime.min/60) # for models that can't incorporate time offset
+
+# Coerce week and block into factors for specification in model
+grazing_wide$Week <- as.factor(grazing_wide$Week)
+grazing_wide$Block <- as.factor(grazing_wide$Block)
+
+
+# Not concerned with species level grazing for initial analyses
+total_grazing_wide <- subset(grazing_wide, Fish.code == "TOTAL")
+colnames(total_grazing_wide)
+
+# visualize grazing
+hist(total_grazing_wide$Bites)
+hist(total_grazing_wide$Bite.rate)
+
+# how many videos in week 0 had no bites?
+sum(subset(total_grazing_wide, Week == 0)$Bites == 0) # 7/24 so it shouldn't be zero inflation...
+sum(subset(total_grazing_wide, Week == 0)$Bites < 100) # and 15/24 had less than 100 bites
+
+
+
+
+# Almost no bites in week 0
+# not enough time for treatment effects
+# run the model without week 0
+total_bites_mod <- glmmTMB(Bites ~ Fertilized + (1 + Week|Plot.ID) + (1|Block) + offset(log(Runtime.min)), data = subset(total_grazing_wide, Week != 0), family = poisson )
+plot(simulateResiduals(total_bites_mod)) # I was correct
+summary(total_bites_mod) # random effects also look way better without week 0
+r.squaredGLMM(total_bites_mod) # 0.10, 0.99
+Anova(total_bites_mod) # X2 = 5.7, P = 0.02
+
+
+testDispersion(simulateResiduals(total_bites_mod))
+
+# zero inflation
+total_bites_zi <- glmmTMB(Bites ~ Fertilized + (1 + Week|Plot.ID) + (1|Block) + offset(log(Runtime.min)), family = poisson, data = total_grazing_wide, ziformula = ~  Week)
+summary(total_bites_zi)
+Anova(total_bites_zi)
+plot(simulateResiduals(total_bites_zi)) # dispersion test significant still but everything else looks better
+# check dispersion parameter
+testDispersion(simulateResiduals(total_bites_zi), alternative = "greater")
+sum(residuals(total_bites_zi, type = "pearson")^2)/(nrow(subset(total_grazing_wide, Week != 0)) - length(coef(total_bites_zi)))
+# still under-dispersed, but not as bad and this model works better than removing some data...
+# I think this model is best because it allows for keeping all the data while still satisfying MOST model assumptions
+# underdispersion REDUCES power, so the fact that we're still significant means there's likely a treatment effect
+
+```
+
+## plot figure 4
+```{r plot figure 4, fig.height = 16, fig.width = 20 }
+ggplot(data = subset(total_grazing_wide, Week != 0) ) +
+  geom_violin( aes(x = Fertilized, y = Bite.rate), lwd = 1.2, scale = "count",
+              draw_quantiles = c(0.25, 0.5, 0.75), fill = "grey", alpha = 0.5) +
+  stat_summary(aes(x = Fertilized, y = Bite.rate), fun ='mean', geom='point', shape = 18, colour = "red", size=10) +
+  geom_jitter(aes(x = Fertilized, y = Bite.rate), width = 0.1, size = 5) +
+  labs(y = bquote("Herbivore bite rate (Bites hr"^ -1*")"~"\n"), x = "") +
+  scale_x_discrete(limits = c("Y", "N"), labels = c("Fertilized", "Unfertilized") ) +
+  theme_classic() + 
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        legend.position = "bottom",
+        legend.key.size = unit(2, 'cm'),
+        legend.text = element_text(size=20),
+        legend.title = element_text(size=20),
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(color = "grey20", size = 25, hjust = .5, vjust = .5, face = "plain"),
+        axis.title.x = element_text(color = "grey20", size = 25, hjust = .5, vjust = 0, face = "plain"),
+        axis.text.y = element_text(color = "grey20", size = 25, hjust = .5, vjust = .5, face = "plain"),
+        axis.title.y = element_text(color = "grey20", size = 28, hjust = .5, vjust = 0, face = "plain"),
+        strip.text.x = element_text(color = "grey20", size = 25, hjust = .5, vjust = 0, face = "plain")
+  )
+  
+
+```

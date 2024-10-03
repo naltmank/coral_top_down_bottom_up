@@ -1,0 +1,97 @@
+Date,Block,Coral ID,Parent colony,Coral,Caging,Fertilizer,Comb,Initial weight,Final weight,Percent change
+3/10/23,Block 2,AP-1-C,AP-1,AP,Uncaged,Unfertilized,Control,22.6,21.2,-6.194690265
+3/10/23,Block 7,AP-1-H,AP-1,AP,Caged,Unfertilized,Caged,26.3,32.5,23.57414449
+3/10/23,Block 7,AP-1-N,AP-1,AP,Uncaged,Fertilized,Fertilizer,27.3,27.7,1.465201465
+3/10/23,Block 2,AP-1-X,AP-1,AP,Caged,Fertilized,Cage x Fertilizer,28.3,31.6,11.66077739
+3/10/23,Block 10,AP-10-C,AP-10,AP,Uncaged,Unfertilized,Control,32.9,31.7,-3.647416413
+3/10/23,Block 4,AP-10-H,AP-10,AP,Caged,Unfertilized,Caged,26.8,29.1,8.582089552
+3/10/23,Block 12,AP-10-N,AP-10,AP,Uncaged,Fertilized,Fertilizer,26,28.5,9.615384615
+3/10/23,Block 1,AP-10-X,AP-10,AP,Caged,Fertilized,Cage x Fertilizer,27.5,30.6,11.27272727
+3/10/23,Block 12,AP-11-C,AP-11,AP,Uncaged,Unfertilized,Control,27.8,29,4.316546763
+3/10/23,Block 12,AP-11-H,AP-11,AP,Caged,Unfertilized,Caged,22.1,24,8.597285068
+3/10/23,Block 6,AP-11-N,AP-11,AP,Uncaged,Fertilized,Fertilizer,22.1,21.8,-1.357466063
+3/10/23,Block 6,AP-11-X,AP-11,AP,Caged,Fertilized,Cage x Fertilizer,24.8,28.1,13.30645161
+3/10/23,Block 4,AP-12-C,AP-12,AP,Uncaged,Unfertilized,Control,23.4,23.5,0.427350427
+3/10/23,Block 5,AP-12-H,AP-12,AP,Caged,Unfertilized,Caged,33.5,36.6,9.253731343
+3/10/23,Block 1,AP-12-N,AP-12,AP,Uncaged,Fertilized,Fertilizer,23.4,23.4,0
+3/10/23,Block 3,AP-12-X,AP-12,AP,Caged,Fertilized,Cage x Fertilizer,29,33.3,14.82758621
+3/10/23,Block 8,AP-2-C,AP-2,AP,Uncaged,Unfertilized,Control,31.4,33.5,6.687898089
+3/10/23,Block 2,AP-2-H,AP-2,AP,Caged,Unfertilized,Caged,30.3,32.7,7.920792079
+3/10/23,Block 8,AP-2-N,AP-2,AP,Uncaged,Fertilized,Fertilizer,29.9,30.7,2.675585284
+3/10/23,Block 9,AP-2-X,AP-2,AP,Caged,Fertilized,Cage x Fertilizer,24.3,27,11.11111111
+3/10/23,Block 11,AP-3-C,AP-3,AP,Uncaged,Unfertilized,Control,27.3,26.5,-2.93040293
+3/10/23,Block 9,AP-3-H,AP-3,AP,Caged,Unfertilized,Caged,29.8,31.6,6.040268456
+3/10/23,Block 4,AP-3-N,AP-3,AP,Uncaged,Fertilized,Fertilizer,24,23.3,-2.916666667
+3/10/23,Block 5,AP-3-X,AP-3,AP,Caged,Fertilized,Cage x Fertilizer,27.4,31.2,13.86861314
+3/10/23,Block 3,AP-4-C,AP-4,AP,Uncaged,Unfertilized,Control,29.6,32.7,10.47297297
+3/10/23,Block 6,AP-4-H,AP-4,AP,Caged,Unfertilized,Caged,24.8,29.4,18.5483871
+3/10/23,Block 3,AP-4-N,AP-4,AP,Uncaged,Fertilized,Fertilizer,25.3,26.1,3.162055336
+3/10/23,Block 8,AP-4-X,AP-4,AP,Caged,Fertilized,Cage x Fertilizer,22.1,24.2,9.502262443
+3/10/23,Block 5,AP-5-C,AP-5,AP,Uncaged,Unfertilized,Control,25.4,25.4,0
+3/10/23,Block 3,AP-5-H,AP-5,AP,Caged,Unfertilized,Caged,23.1,24.8,7.359307359
+3/10/23,Block 9,AP-5-N,AP-5,AP,Uncaged,Fertilized,Fertilizer,22.6,23.8,5.309734513
+3/10/23,Block 4,AP-5-X,AP-5,AP,Caged,Fertilized,Cage x Fertilizer,28,31.6,12.85714286
+3/10/23,Block 7,AP-6-C,AP-6,AP,Uncaged,Unfertilized,Control,28.6,30.2,5.594405594
+3/10/23,Block 10,AP-6-H,AP-6,AP,Caged,Unfertilized,Caged,28.4,33.1,16.54929577
+3/10/23,Block 2,AP-6-N,AP-6,AP,Uncaged,Fertilized,Fertilizer,26.2,25.5,-2.671755725
+3/10/23,Block 12,AP-6-X,AP-6,AP,Caged,Fertilized,Cage x Fertilizer,28.6,33.9,18.53146853
+3/10/23,Block 9,AP-7-C,AP-7,AP,Uncaged,Unfertilized,Control,23.5,22.6,-3.829787234
+3/10/23,Block 1,AP-7-H,AP-7,AP,Caged,Unfertilized,Caged,26.3,29.1,10.64638783
+3/10/23,Block 5,AP-7-N,AP-7,AP,Uncaged,Fertilized,Fertilizer,26.1,26.9,3.0651341
+3/10/23,Block 10,AP-7-X,AP-7,AP,Caged,Fertilized,Cage x Fertilizer,27.7,31,11.9133574
+3/10/23,Block 1,AP-8-C,AP-8,AP,Uncaged,Unfertilized,Control,27.3,28.2,3.296703297
+3/10/23,Block 8,AP-8-H,AP-8,AP,Caged,Unfertilized,Caged,24.1,28.4,17.84232365
+3/10/23,Block 11,AP-8-N,AP-8,AP,Uncaged,Fertilized,Fertilizer,25.2,24.4,-3.174603175
+3/10/23,Block 7,AP-8-X,AP-8,AP,Caged,Fertilized,Cage x Fertilizer,26,31.6,21.53846154
+3/10/23,Block 6,AP-9-C,AP-9,AP,Uncaged,Unfertilized,Control,26.8,24.8,-7.462686567
+3/10/23,Block 11,AP-9-H,AP-9,AP,Caged,Unfertilized,Caged,28.6,32.6,13.98601399
+3/10/23,Block 10,AP-9-N,AP-9,AP,Uncaged,Fertilized,Fertilizer,26,24.8,-4.615384615
+3/10/23,Block 11,AP-9-X,AP-9,AP,Caged,Fertilized,Cage x Fertilizer,29.9,33.8,13.04347826
+3/10/23,Block 8,PR-1-C,PR-1,PR,Uncaged,Unfertilized,Control,43.6,47.4,8.71559633
+3/10/23,Block 1,PR-1-H,PR-1,PR,Caged,Unfertilized,Caged,55,60.2,9.454545455
+3/10/23,Block 6,PR-1-N,PR-1,PR,Uncaged,Fertilized,Fertilizer,58.4,64.9,11.13013699
+3/10/23,Block 1,PR-1-X,PR-1,PR,Caged,Fertilized,Cage x Fertilizer,37.3,40.1,7.506702413
+3/10/23,Block 7,PR-10-C,PR-10,PR,Uncaged,Unfertilized,Control,53,55.5,4.716981132
+3/10/23,Block 5,PR-10-H,PR-10,PR,Caged,Unfertilized,Caged,45.3,49.4,9.050772627
+3/10/23,Block 4,PR-10-N,PR-10,PR,Uncaged,Fertilized,Fertilizer,43.9,47.7,8.656036446
+3/10/23,Block 6,PR-10-X,PR-10,PR,Caged,Fertilized,Cage x Fertilizer,36.2,38.2,5.524861878
+3/10/23,Block 5,PR-11-C,PR-11,PR,Uncaged,Unfertilized,Control,53.4,60.8,13.8576779
+3/10/23,Block 2,PR-11-H,PR-11,PR,Caged,Unfertilized,Caged,54.6,59.3,8.608058608
+3/10/23,Block 5,PR-11-N,PR-11,PR,Uncaged,Fertilized,Fertilizer,54,60.3,11.66666667
+3/10/23,Block 3,PR-11-X,PR-11,PR,Caged,Fertilized,Cage x Fertilizer,48.2,55.1,14.3153527
+3/10/23,Block 9,PR-12-C,PR-12,PR,Uncaged,Unfertilized,Control,35.4,36.6,3.389830508
+3/10/23,Block 6,PR-12-H,PR-12,PR,Caged,Unfertilized,Caged,38.8,41.2,6.18556701
+3/10/23,Block 1,PR-12-N,PR-12,PR,Uncaged,Fertilized,Fertilizer,47.6,50.4,5.882352941
+3/10/23,Block 5,PR-12-X,PR-12,PR,Caged,Fertilized,Cage x Fertilizer,43.1,46,6.728538283
+3/10/23,Block 1,PR-2-C,PR-2,PR,Uncaged,Unfertilized,Control,43,46.7,8.604651163
+3/10/23,Block 7,PR-2-H,PR-2,PR,Caged,Unfertilized,Caged,36.8,39.4,7.065217391
+3/10/23,Block 7,PR-2-N,PR-2,PR,Uncaged,Fertilized,Fertilizer,50.5,57,12.87128713
+3/10/23,Block 12,PR-2-X,PR-2,PR,Caged,Fertilized,Cage x Fertilizer,44.9,44.8,-0.222717149
+3/10/23,Block 4,PR-3-C,PR-3,PR,Uncaged,Unfertilized,Control,62.9,70.3,11.76470588
+3/10/23,Block 8,PR-3-H,PR-3,PR,Caged,Unfertilized,Caged,40.8,41.5,1.715686275
+3/10/23,Block 2,PR-3-N,PR-3,PR,Uncaged,Fertilized,Fertilizer,53.1,58.5,10.16949153
+3/10/23,Block 4,PR-3-X,PR-3,PR,Caged,Fertilized,Cage x Fertilizer,30,34.5,15
+3/10/23,Block 11,PR-4-C,PR-4,PR,Uncaged,Unfertilized,Control,34.2,36.1,5.555555556
+3/10/23,Block 10,PR-4-H,PR-4,PR,Caged,Unfertilized,Caged,39.4,40.4,2.538071066
+3/10/23,Block 10,PR-4-N,PR-4,PR,Uncaged,Fertilized,Fertilizer,42.1,45.8,8.788598575
+3/10/23,Block 9,PR-4-X,PR-4,PR,Caged,Fertilized,Cage x Fertilizer,33.9,36.1,6.489675516
+3/10/23,Block 3,PR-5-C,PR-5,PR,Uncaged,Unfertilized,Control,45.5,52.7,15.82417582
+3/10/23,Block 9,PR-5-H,PR-5,PR,Caged,Unfertilized,Caged,41.8,45,7.655502392
+3/10/23,Block 11,PR-5-N,PR-5,PR,Uncaged,Fertilized,Fertilizer,45.1,48.1,6.651884701
+3/10/23,Block 2,PR-5-X,PR-5,PR,Caged,Fertilized,Cage x Fertilizer,41.9,41.4,-1.193317422
+3/10/23,Block 2,PR-6-C,PR-6,PR,Uncaged,Unfertilized,Control,37.6,42,11.70212766
+3/10/23,Block 4,PR-6-H,PR-6,PR,Caged,Unfertilized,Caged,42.7,47,10.07025761
+3/10/23,Block 12,PR-6-N,PR-6,PR,Uncaged,Fertilized,Fertilizer,35.3,38.4,8.781869688
+3/10/23,Block 7,PR-6-X,PR-6,PR,Caged,Fertilized,Cage x Fertilizer,56.6,61.8,9.187279152
+3/10/23,Block 12,PR-7-C,PR-7,PR,Uncaged,Unfertilized,Control,49.8,53.7,7.831325301
+3/10/23,Block 11,PR-7-H,PR-7,PR,Caged,Unfertilized,Caged,29.6,31.9,7.77027027
+3/10/23,Block 3,PR-7-N,PR-7,PR,Uncaged,Fertilized,Fertilizer,45.6,47.3,3.728070175
+3/10/23,Block 10,PR-7-X,PR-7,PR,Caged,Fertilized,Cage x Fertilizer,28.4,30.3,6.690140845
+3/10/23,Block 10,PR-8-C,PR-8,PR,Uncaged,Unfertilized,Control,52.7,57.6,9.297912713
+3/10/23,Block 3,PR-8-H,PR-8,PR,Caged,Unfertilized,Caged,53.9,58.2,7.977736549
+3/10/23,Block 8,PR-8-N,PR-8,PR,Uncaged,Fertilized,Fertilizer,48.8,52.8,8.196721311
+3/10/23,Block 11,PR-8-X,PR-8,PR,Caged,Fertilized,Cage x Fertilizer,42.6,45.8,7.511737089
+3/10/23,Block 6,PR-9-C,PR-9,PR,Uncaged,Unfertilized,Control,48,53.3,11.04166667
+3/10/23,Block 12,PR-9-H,PR-9,PR,Caged,Unfertilized,Caged,50,52.1,4.2
+3/10/23,Block 9,PR-9-N,PR-9,PR,Uncaged,Fertilized,Fertilizer,38,41.6,9.473684211
+3/10/23,Block 8,PR-9-X,PR-9,PR,Caged,Fertilized,Cage x Fertilizer,46.8,50.4,7.692307692
