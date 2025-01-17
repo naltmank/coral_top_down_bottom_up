@@ -1,5 +1,6 @@
 # coral_top_down_bottom_up
 Contains data and code for Altman-Kurosaki and Hay 2024 MEPS
+https://doi.org/10.3354/meps14737
 
 # Data
 The data folder contains four files:
