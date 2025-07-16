@@ -487,8 +487,7 @@ plot(simulateResiduals(total_bites_zi)) # dispersion test significant still but 
 # check dispersion parameter
 testDispersion(simulateResiduals(total_bites_zi), alternative = "greater")
 sum(residuals(total_bites_zi, type = "pearson")^2)/(nrow(subset(total_grazing_wide, Week != 0)) - length(coef(total_bites_zi)))
-# still under-dispersed, but not as bad and this model works better than removing some data...
-# I think this model is best because it allows for keeping all the data while still satisfying MOST model assumptions
+# still under-dispersed, but not as bad 
 # underdispersion REDUCES power, so the fact that we're still significant means there's likely a treatment effect
 
 ```
