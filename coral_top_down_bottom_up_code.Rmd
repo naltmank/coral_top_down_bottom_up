@@ -67,27 +67,13 @@ hist(change$Percent.change) # continuous -Inf - Inf, mostly normal
 
 growth_mod <- lmer(Percent.change ~ Caging*Fertilizer*Coral + (1 | Parent.colony) + (1 + Comb | Block), data = change)
 summary(growth_mod)
-anova(growth_mod) # REALLY ONLY A CORAL*CAGING EFFECT
-plot(simulateResiduals(growth_mod)) # all good
+anova(growth_mod) 
+plot(simulateResiduals(growth_mod)) # check assumptions
 r.squaredGLMM(growth_mod) # 0.53, 0.60
 
-#  Type III Analysis of Variance Table with Satterthwaite's method
-#                           Sum Sq Mean Sq NumDF  DenDF F value    Pr(>F)    
-#  Caging                   535.15  535.15     1 12.694 35.5861 5.193e-05 ***
-#  Fertilizer                 2.28    2.28     1 49.964  0.1514    0.6988    
-#  Coral                     32.90   32.90     1 66.000  2.1877    0.1439    
-#  Caging:Fertilizer          2.72    2.72     1 14.180  0.1810    0.6769    
-#  Caging:Coral            1245.76 1245.76     1 66.000 82.8391 2.871e-13 ***
-#  Fertilizer:Coral           4.92    4.92     1 66.000  0.3270    0.5694    
-#  Caging:Fertilizer:Coral    0.02    0.02     1 66.000  0.0015    0.9694    
-   
-results <-  "Caging - P = 5.2e-05\nFertilizer - P = 0.69\nCoral - P = 0.14\nCaging X Fertilizer - P = 0.67\nCaging X Coral - P = 2.9e-13\nFertilizerXCoral - P = 0.56\nCaging X Fertilizer X Coral - P = 0.96"
-
-
+# pairwise comparisons
 growth_emm <- emmeans(growth_mod, ~ Coral*Caging*Fertilizer) # create emmeans object
 emmeans::contrast(growth_emm, "consec", simple = "each", combine = TRUE, adjust = "bonferroni") 
-# Porites grows more than Acropora when uncaged, but Acropora grows more when caged (no real fertilizer effect)
-# Acropora grows more when caged regardless of fertilizer. Caging doesn't affect porites growth regardless of fertilizer
 
 change_means <- plyr::ddply(change, c("Coral", "Caging", "Fertilizer"), numcolwise(mean))
 
@@ -275,49 +261,16 @@ overgrowth_mod <- glmmTMB(Overgrowth_transformed ~ Coral.species*Caging*Fertiliz
 summary(overgrowth_mod)
 plot(simulateResiduals(overgrowth_mod)) # looks good
 Anova(overgrowth_mod)
-##                                   Chisq Df Pr(>Chisq)    
-## Coral.species                   43.9711  1  3.333e-11 ***
-## Caging                           3.1181  1  0.0774270 .  
-## Fertilized                       1.3208  1  0.2504441    
-## Coral.species:Caging             0.1887  1  0.6640105    
-## Coral.species:Fertilized         0.7901  1  0.3740559    
-## Caging:Fertilized               19.3053  1  1.114e-05 ***
-## Coral.species:Caging:Fertilized 11.6960  1  0.0006263 ***
 
 
 total_mortality_mod <- glmmTMB(Overgrowth.or.mortality_transformed ~ Coral.species*Caging*Fertilized + (1|Parent.colony) + (1|Block), data = overgrowth, beta_family(link = "logit"))
 plot(simulateResiduals(total_mortality_mod)) # looks good
 summary(total_mortality_mod)
 Anova(total_mortality_mod) 
-##                                   Chisq Df Pr(>Chisq)    
-## Coral.species                   45.6114  1  1.442e-11 ***
-## Caging                           3.4513  1   0.063201 .  
-## Fertilized                       1.5365  1   0.215140    
-## Coral.species:Caging             0.1179  1   0.731377    
-## Coral.species:Fertilized         0.9824  1   0.321606    
-## Caging:Fertilized               20.0551  1  7.524e-06 ***
-## Coral.species:Caging:Fertilized 12.5891  1   0.000388 ***
-
-# Trends basically identical between just overgrowth vs. overgrowth and additional mortality
-
-# FOR GRAPH
-## Caging - P = 0.06
-## Fertilizer - P = 0.2
-## Coral - P < 0.001  
-## Caging X Fertilizer - P < 0.001
-## Caging X Coral - P = 0.7    
-## Fertilizer X Coral - P = 0.3  
-## Caging X Fertilizer X Coral - P < 0.001
-
-# for both species, there seems to be a caging x fertilized interaction, where caged x unfertilized corals have more overgrowth than caged x fertilized corals, but uncaged x fertilized corals have more overgrowth than uncaged x unfertilized corals
 
 # examining three way interactions
 mortality_emm <- emmeans(total_mortality_mod, ~ Coral.species*Caging*Fertilized) # create emmeans object
-emmeans::contrast(mortality_emm, "consec", simple = "each", combine = TRUE, adjust = "bonferroni") # examine pairwise comparisons/interactions
-# overgrowth for porites is greater than acropora when: 1) uncaged x fertilized, 2) Caged x unfertilized (P < 0.0001)
-# overgrowth is greater in caged treatments for porites regardless of if fertilized (P = 0.01) or unfertilized (P < 0.0001)
-# overgrowth is greater for porites in the caged x unfertilized treatment vs. unfertilized treatment (P < 0.001), but is greater in the fertilized treatment when uncaged (P = 0.03)
-# overgrowth is similar for acropora regardless of caging or fertilizer treatment
+emmeans::contrast(mortality_emm, "consec", simple = "each", combine = TRUE, adjust = "bonferroni") 
 
 
 overgrowth_means <- ddply(overgrowth, c("Coral.species", "Fertilized", "Caging"), numcolwise(mean))
@@ -331,29 +284,7 @@ plot(simulateResiduals(total_mortality_mod_v2)) # looks good
 summary(total_mortality_mod_v2)
 Anova(total_mortality_mod_v2)
 
-# NEW RESULTS
-# Response: Overgrowth.or.mortality_transformed
-#                                   Chisq Df Pr(>Chisq)    
-# Coral.species                   46.1547  1  1.093e-11 ***
-# Caging                           6.4773  1  0.0109259 *  
-# Fertilized                       0.4928  1  0.4826678    
-# Coral.species:Caging             0.7213  1  0.3957027    
-# Coral.species:Fertilized         0.4099  1  0.5220397    
-# Caging:Fertilized               18.7357  1  1.501e-05 ***
-# Coral.species:Caging:Fertilized 11.0196  1  0.0009015 ***
 
-# OLD RESULTS
-#                                   Chisq Df Pr(>Chisq)    
-# Coral.species                   45.6114  1  1.442e-11 ***
-# Caging                           3.4513  1   0.063201 .  
-# Fertilized                       1.5365  1   0.215140    
-# Coral.species:Caging             0.1179  1   0.731377    
-# Coral.species:Fertilized         0.9824  1   0.321606    
-# Caging:Fertilized               20.0551  1  7.524e-06 ***
-# Coral.species:Caging:Fertilized 12.5891  1   0.000388 ***
-
-# Caging now sig
-# otherwise results are near identical
 
 mortality_emm_v2 <- emmeans(total_mortality_mod_v2, ~ Coral.species*Caging*Fertilized) # create emmeans object
 emmeans::contrast(mortality_emm_v2, "consec", simple = "each", combine = TRUE, adjust = "bonferroni") # examine pairwise
@@ -418,8 +349,7 @@ ggplot() +
   facet_wrap(~Coral.species, labeller = as_labeller(c("Acropora" = "A. pulchra", "Porites" = "P. rus")) ) +
    labs(y = "Overgrowth (%)\n", x = "", title = "") +
   scale_y_continuous(limits = c(0, 114)) +
-#  scale_shape_manual(guide = "none") +
-  
+
   theme_classic() + 
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
@@ -455,16 +385,6 @@ grazing_wide$Block <- as.factor(grazing_wide$Block)
 # Not concerned with species level grazing for initial analyses
 total_grazing_wide <- subset(grazing_wide, Fish.code == "TOTAL")
 colnames(total_grazing_wide)
-
-# visualize grazing
-hist(total_grazing_wide$Bites)
-hist(total_grazing_wide$Bite.rate)
-
-# how many videos in week 0 had no bites?
-sum(subset(total_grazing_wide, Week == 0)$Bites == 0) # 7/24 so it shouldn't be zero inflation...
-sum(subset(total_grazing_wide, Week == 0)$Bites < 100) # and 15/24 had less than 100 bites
-
-
 
 
 # Almost no bites in week 0
